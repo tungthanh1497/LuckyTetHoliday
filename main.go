@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -25,6 +26,33 @@ func startGame(listPlayers *[]Player) {
 			existedCards[card] = true
 			(*listPlayers)[position].listCard[i] = card
 		}
+		calSum(&((*listPlayers)[position]))
+	}
+}
+
+func calSum(player *Player) {
+	sum := 0
+	isTriple := true
+	checkingValue := 0
+	for i := 0; i < len(player.listCard); i++ {
+		value, _ := strconv.Atoi((*player).listCard[i][0:1])
+		sum += value
+		if 0 == checkingValue {
+			checkingValue = value
+		} else if checkingValue != value {
+			isTriple = false
+		}
+	}
+	switch sum % 10 {
+	case 0:
+		(*player).sum = 10
+		(*player).typeWon = 2
+	default:
+		(*player).sum = sum % 10
+		(*player).typeWon = 1
+	}
+	if isTriple {
+		(*player).typeWon = 3
 	}
 }
 
