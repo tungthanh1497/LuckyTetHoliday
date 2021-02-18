@@ -14,7 +14,6 @@ func main() {
 
 	fmt.Println("Start game")
 	startGame(&listPlayers)
-	fmt.Println(listPlayers)
 
 }
 
@@ -60,6 +59,49 @@ func startGame(listPlayers *[]Player) {
 			}
 		}
 	})
+	for position := 0; position < len(*listPlayers); position++ {
+		printPlayer((*listPlayers)[position])
+	}
+}
+
+func printPlayer(player Player) {
+	result := fmt.Sprintf("%s got", player.name)
+	if 3 == player.typeWon {
+		result = fmt.Sprintf("%s triple", result)
+	} else {
+		result = fmt.Sprintf("%s %d point", result, player.sum)
+	}
+
+	cardDex := ""
+	for i := 0; i < len(player.listCard); i++ {
+		value, suit := getValueSuitByCard(player.listCard[i])
+		if 1 == value {
+			cardDex = fmt.Sprintf("%sA", cardDex)
+		} else {
+			cardDex = fmt.Sprintf("%s%d", cardDex, value)
+		}
+		switch suit {
+		case 3:
+			cardDex = fmt.Sprintf("%s♢", cardDex)
+		case 2:
+			cardDex = fmt.Sprintf("%s♡", cardDex)
+		case 1:
+			cardDex = fmt.Sprintf("%s♧", cardDex)
+		default:
+			cardDex = fmt.Sprintf("%s♤", cardDex)
+		}
+		if i < len(player.listCard)-1 {
+			cardDex = fmt.Sprintf("%s, ", cardDex)
+		}
+	}
+
+	result = fmt.Sprintf("%s (%s)", result, cardDex)
+	fmt.Println(result)
+}
+
+func getValueSuitByCard(card string) (int, int) {
+	iCard, _ := strconv.Atoi(card)
+	return iCard / 10, iCard % 10
 }
 
 /**
@@ -68,9 +110,7 @@ get max value in list card (by max suit)
 func getMaxValue(listCard [3]string, maxSuit int) int {
 	maxValue := 0
 	for i := 0; i < len(listCard); i++ {
-		iCard, _ := strconv.Atoi(listCard[i])
-		value := iCard / 10
-		suit := iCard % 10
+		value, suit := getValueSuitByCard(listCard[i])
 		if 1 == value {
 			value = 10
 		}
@@ -87,8 +127,7 @@ get max suit in list card
 func getMaxSuit(listCard [3]string) int {
 	maxSuit := 0
 	for i := 0; i < len(listCard); i++ {
-		iCard, _ := strconv.Atoi(listCard[i])
-		suit := iCard % 10
+		_, suit := getValueSuitByCard(listCard[i])
 		if suit > maxSuit {
 			maxSuit = suit
 		}
@@ -100,11 +139,11 @@ func getMaxSuit(listCard [3]string) int {
 case triple, get check value (any value in list cards)
 */
 func getCheckValue(card string) int {
-	if 1 == card[0] {
+	value, _ := getValueSuitByCard(card)
+	if 1 == value {
 		return 10
 	} else {
-		iCard, _ := strconv.Atoi(card)
-		return iCard / 10
+		return value
 	}
 }
 
@@ -113,7 +152,7 @@ func calSum(player *Player) {
 	isTriple := true
 	checkingValue := 0
 	for i := 0; i < len(player.listCard); i++ {
-		value, _ := strconv.Atoi((*player).listCard[i][0:1])
+		value, _ := getValueSuitByCard((*player).listCard[i])
 		sum += value
 		if 0 == checkingValue {
 			// first card
