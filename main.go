@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -27,6 +28,66 @@ func startGame(listPlayers *[]Player) {
 			(*listPlayers)[position].listCard[i] = card
 		}
 		calSum(&((*listPlayers)[position]))
+	}
+	sort.SliceStable(*listPlayers, func(x, y int) bool {
+		xPlayer := (*listPlayers)[x]
+		yPlayer := (*listPlayers)[y]
+		if xPlayer.typeWon != yPlayer.typeWon {
+			return xPlayer.typeWon > yPlayer.typeWon
+		} else if 3 == xPlayer.typeWon {
+			xCheckValue := getCheckValue(xPlayer.listCard[0])
+			yCheckValue := getCheckValue(yPlayer.listCard[0])
+			return xCheckValue > yCheckValue
+		} else if xPlayer.sum != yPlayer.sum {
+			return xPlayer.sum > yPlayer.sum
+		} else {
+			xMaxSuit := getMaxSuit(xPlayer.listCard)
+			yMaxSuit := getMaxSuit(yPlayer.listCard)
+			if xMaxSuit != yMaxSuit {
+				return xMaxSuit > yMaxSuit
+			} else {
+				xMaxValue := getMaxValue(xPlayer.listCard, xMaxSuit)
+				yMaxValue := getMaxValue(yPlayer.listCard, yMaxSuit)
+				return xMaxValue > yMaxValue
+			}
+		}
+	})
+}
+
+func getMaxValue(listCard [3]string, maxSuit int) int {
+	maxValue := 0
+	for i := 0; i < len(listCard); i++ {
+		iCard, _ := strconv.Atoi(listCard[i])
+		value := iCard / 10
+		suit := iCard % 10
+		if 1 == value {
+			value = 10
+		}
+		if suit == maxSuit && value > maxValue {
+			maxValue = value
+		}
+	}
+	return maxValue
+}
+
+func getMaxSuit(listCard [3]string) int {
+	maxSuit := 0
+	for i := 0; i < len(listCard); i++ {
+		iCard, _ := strconv.Atoi(listCard[i])
+		suit := iCard % 10
+		if suit > maxSuit {
+			maxSuit = suit
+		}
+	}
+	return maxSuit
+}
+
+func getCheckValue(card string) int {
+	if 1 == card[0] {
+		return 10
+	} else {
+		iCard, _ := strconv.Atoi(card)
+		return iCard / 10
 	}
 }
 
@@ -108,7 +169,7 @@ func inputNumPlayers() int {
 
 type Player struct {
 	name     string
-	listCard [3]string
+	listCard [3]string // string <value-suit>: value 1-9 ; suit 0-3 (spade, club, heart, diamond)
 	sum      int
 	typeWon  int // 1: normal, 2: sum equal 10, 3: triple
 }
