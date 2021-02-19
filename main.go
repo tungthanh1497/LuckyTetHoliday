@@ -13,7 +13,10 @@ func main() {
 	listPlayers := initPlayers()
 
 	fmt.Println("Start game")
-	startGame(&listPlayers)
+
+	for playAgain := true; playAgain; playAgain = getPlayAgain() {
+		startGame(&listPlayers)
+	}
 
 }
 
@@ -61,6 +64,18 @@ func startGame(listPlayers *[]Player) {
 	})
 	for position := 0; position < len(*listPlayers); position++ {
 		printPlayer((*listPlayers)[position])
+	}
+
+}
+
+func getPlayAgain() bool {
+	var playAgain string
+	fmt.Print("Play again? (Y): ")
+	_, err := fmt.Scanf("%s", &playAgain)
+	if err == nil && ("y" == playAgain || "Y" == playAgain) {
+		return true
+	} else {
+		return false
 	}
 }
 
